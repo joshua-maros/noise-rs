@@ -79,7 +79,7 @@ impl fmt::Debug for PermutationTable {
 
 #[cfg(test)]
 mod tests {
-    use crate::{NoiseFn, Perlin, Seedable};
+    use crate::{generators::Perlin, NoiseFn, Seedable};
     use rand::random;
 
     #[test]

@@ -1,13 +1,10 @@
-pub use self::{
-    cache::*, combiners::*, generators::*, modifiers::*, selectors::*, transformers::*,
-};
-
-mod cache;
-mod combiners;
-mod generators;
-mod modifiers;
-mod selectors;
-mod transformers;
+pub mod cache;
+pub mod combiners;
+pub mod fractals;
+pub mod generators;
+pub mod modifiers;
+pub mod selectors;
+pub mod transformers;
 
 /// Base trait for noise functions.
 ///

@@ -1,6 +1,6 @@
 use crate::math;
 
-use crate::noise_fns::{MultiFractal, NoiseFn, Perlin, Seedable};
+use crate::{fractals::MultiFractal, generators::Perlin, NoiseFn, Seedable};
 
 /// Noise function that outputs hybrid Multifractal noise.
 ///

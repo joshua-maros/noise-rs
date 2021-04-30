@@ -1,25 +1,19 @@
 use crate::math;
 
-use crate::noise_fns::{MultiFractal, NoiseFn, Perlin, Seedable};
+use crate::{fractals::MultiFractal, NoiseFn, generators::Perlin, Seedable};
 
-/// Noise function that outputs fBm (fractal Brownian motion) noise.
+/// Noise function that outputs heterogenous Multifractal noise.
 ///
-/// fBm is a _monofractal_ method. In essence, fBm has a _constant_ fractal
-/// dimension. It is as close to statistically _homogeneous_ and _isotropic_
-/// as possible. Homogeneous means "the same everywhere" and isotropic means
-/// "the same in all directions" (note that the two do not mean the same
-/// thing).
+/// This is a multifractal method, meaning that it has a fractal dimension
+/// that varies with location.
 ///
-/// The main difference between fractal Brownian motion and regular Brownian
-/// motion is that while the increments in Brownian motion are independent,
-/// the increments in fractal Brownian motion depend on the previous increment.
+/// The result of this multifractal method is that in areas near zero, higher
+/// frequencies will be heavily damped, resulting in the terrain remaining
+/// smooth. As the value moves further away from zero, higher frequencies will
+/// not be as damped and thus will grow more jagged as iteration progresses.
 ///
-/// fBm is the result of several noise functions of ever-increasing frequency
-/// and ever-decreasing amplitude.
-///
-/// fBm is commonly referred to as Perlin noise.
 #[derive(Clone, Debug)]
-pub struct Fbm {
+pub struct BasicMulti {
     /// Total number of frequency octaves to generate the noise with.
     ///
     /// The number of octaves control the _amount of detail_ in the noise
@@ -50,17 +44,12 @@ pub struct Fbm {
 
     seed: u32,
     sources: Vec<Perlin>,
-    scale_factor: f64,
 }
 
-fn calc_scale_factor(persistence: f64, octaves: usize) -> f64 {
-    1.0 - persistence.powi(octaves as i32)
-}
-
-impl Fbm {
+impl BasicMulti {
     pub const DEFAULT_SEED: u32 = 0;
-    pub const DEFAULT_OCTAVE_COUNT: usize = 6;
-    pub const DEFAULT_FREQUENCY: f64 = 1.0;
+    pub const DEFAULT_OCTAVES: usize = 6;
+    pub const DEFAULT_FREQUENCY: f64 = 2.0;
     pub const DEFAULT_LACUNARITY: f64 = std::f64::consts::PI * 2.0 / 3.0;
     pub const DEFAULT_PERSISTENCE: f64 = 0.5;
     pub const MAX_OCTAVES: usize = 32;
@@ -68,23 +57,22 @@ impl Fbm {
     pub fn new() -> Self {
         Self {
             seed: Self::DEFAULT_SEED,
-            octaves: Self::DEFAULT_OCTAVE_COUNT,
+            octaves: Self::DEFAULT_OCTAVES,
             frequency: Self::DEFAULT_FREQUENCY,
             lacunarity: Self::DEFAULT_LACUNARITY,
             persistence: Self::DEFAULT_PERSISTENCE,
-            sources: super::build_sources(Self::DEFAULT_SEED, Self::DEFAULT_OCTAVE_COUNT),
-            scale_factor: calc_scale_factor(Self::DEFAULT_PERSISTENCE, Self::DEFAULT_OCTAVE_COUNT),
+            sources: super::build_sources(Self::DEFAULT_SEED, Self::DEFAULT_OCTAVES),
         }
     }
 }
 
-impl Default for Fbm {
+impl Default for BasicMulti {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl MultiFractal for Fbm {
+impl MultiFractal for BasicMulti {
     fn set_octaves(self, mut octaves: usize) -> Self {
         if self.octaves == octaves {
             return self;
@@ -94,7 +82,6 @@ impl MultiFractal for Fbm {
         Self {
             octaves,
             sources: super::build_sources(self.seed, octaves),
-            scale_factor: calc_scale_factor(self.persistence, octaves),
             ..self
         }
     }
@@ -110,13 +97,12 @@ impl MultiFractal for Fbm {
     fn set_persistence(self, persistence: f64) -> Self {
         Self {
             persistence,
-            scale_factor: calc_scale_factor(persistence, self.octaves),
             ..self
         }
     }
 }
 
-impl Seedable for Fbm {
+impl Seedable for BasicMulti {
     fn set_seed(self, seed: u32) -> Self {
         if self.seed == seed {
             return self;
@@ -134,80 +120,92 @@ impl Seedable for Fbm {
     }
 }
 
-/// 2-dimensional Fbm noise
-impl NoiseFn<f64, 2> for Fbm {
+/// 2-dimensional `BasicMulti` noise
+impl NoiseFn<f64, 2> for BasicMulti {
     fn get(&self, mut point: [f64; 2]) -> f64 {
-        let mut result = 0.0;
-
+        // First unscaled octave of function; later octaves are scaled.
         point = math::mul2(point, self.frequency);
+        let mut result = self.sources[0].get(point);
 
-        for x in 0..self.octaves {
-            // Get the signal.
-            let mut signal = self.sources[x].get(point);
-
-            // Scale the amplitude appropriately for this frequency.
-            signal *= self.persistence.powi(x as i32);
-
-            // Add the signal to the result.
-            result += signal;
-
-            // Increase the frequency for the next octave.
+        // Spectral construction inner loop, where the fractal is built.
+        for x in 1..self.octaves {
+            // Raise the spatial frequency.
             point = math::mul2(point, self.lacunarity);
+
+            // Get noise value.
+            let mut signal = self.sources[x].get(point);
+
+            // Scale the amplitude appropriately for this frequency.
+            signal *= self.persistence.powi(x as i32);
+
+            // Scale the signal by the current 'altitude' of the function.
+            signal *= result;
+
+            // Add signal to result.
+            result += signal;
         }
 
-        // Scale the result into the [-1,1] range
-        result / self.scale_factor
+        // Scale the result to the [-1,1] range.
+        result * 0.5
     }
 }
 
-/// 3-dimensional Fbm noise
-impl NoiseFn<f64, 3> for Fbm {
+/// 3-dimensional `BasicMulti` noise
+impl NoiseFn<f64, 3> for BasicMulti {
     fn get(&self, mut point: [f64; 3]) -> f64 {
-        let mut result = 0.0;
-
+        // First unscaled octave of function; later octaves are scaled.
         point = math::mul3(point, self.frequency);
+        let mut result = self.sources[0].get(point);
 
-        for x in 0..self.octaves {
-            // Get the signal.
+        // Spectral construction inner loop, where the fractal is built.
+        for x in 1..self.octaves {
+            // Raise the spatial frequency.
+            point = math::mul3(point, self.lacunarity);
+
+            // Get noise value.
             let mut signal = self.sources[x].get(point);
 
             // Scale the amplitude appropriately for this frequency.
             signal *= self.persistence.powi(x as i32);
 
-            // Add the signal to the result.
-            result += signal;
+            // Scale the signal by the current 'altitude' of the function.
+            signal *= result;
 
-            // Increase the frequency for the next octave.
-            point = math::mul3(point, self.lacunarity);
+            // Add signal to result.
+            result += signal;
         }
 
-        // Scale the result into the [-1,1] range
-        result / self.scale_factor
+        // Scale the result to the [-1,1] range.
+        result * 0.5
     }
 }
 
-/// 4-dimensional Fbm noise
-impl NoiseFn<f64, 4> for Fbm {
+/// 4-dimensional `BasicMulti` noise
+impl NoiseFn<f64, 4> for BasicMulti {
     fn get(&self, mut point: [f64; 4]) -> f64 {
-        let mut result = 0.0;
-
+        // First unscaled octave of function; later octaves are scaled.
         point = math::mul4(point, self.frequency);
+        let mut result = self.sources[0].get(point);
 
-        for x in 0..self.octaves {
-            // Get the signal.
+        // Spectral construction inner loop, where the fractal is built.
+        for x in 1..self.octaves {
+            // Raise the spatial frequency.
+            point = math::mul4(point, self.lacunarity);
+
+            // Get noise value.
             let mut signal = self.sources[x].get(point);
 
             // Scale the amplitude appropriately for this frequency.
             signal *= self.persistence.powi(x as i32);
 
-            // Add the signal to the result.
-            result += signal;
+            // Scale the signal by the current 'altitude' of the function.
+            signal *= result;
 
-            // Increase the frequency for the next octave.
-            point = math::mul4(point, self.lacunarity);
+            // Add signal to result.
+            result += signal;
         }
 
-        // Scale the result into the [-1,1] range
-        result / self.scale_factor
+        // Scale the result to the [-1,1] range.
+        result * 0.5
     }
 }

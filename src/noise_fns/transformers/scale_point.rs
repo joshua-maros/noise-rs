@@ -124,7 +124,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{super::super::Perlin, *};
+    use crate::generators::Perlin;
+    use super::*;
 
     #[test]
     fn test_pass_by_ref() {

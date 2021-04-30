@@ -9,12 +9,12 @@ use crate::{
 /// THis is a variant of original perlin noise, based on the principles of simplex noise to
 /// calculate the values at a point using wavelets instead of interpolated gradients.
 #[derive(Clone, Copy, Debug)]
-pub struct Perlin {
+pub struct PerlinSurflet {
     seed: u32,
     perm_table: PermutationTable,
 }
 
-impl Perlin {
+impl PerlinSurflet {
     pub const DEFAULT_SEED: u32 = 0;
 
     pub fn new() -> Self {
@@ -25,13 +25,13 @@ impl Perlin {
     }
 }
 
-impl Default for Perlin {
+impl Default for PerlinSurflet {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Seedable for Perlin {
+impl Seedable for PerlinSurflet {
     /// Sets the seed value for Perlin noise
     fn set_seed(self, seed: u32) -> Self {
         // If the new seed is the same as the current seed, just return self.
@@ -52,7 +52,7 @@ impl Seedable for Perlin {
 }
 
 /// 2-dimensional perlin noise
-impl NoiseFn<f64, 2> for Perlin {
+impl NoiseFn<f64, 2> for PerlinSurflet {
     fn get(&self, point: [f64; 2]) -> f64 {
         const SCALE_FACTOR: f64 = 3.160_493_827_160_493_7;
 
@@ -99,7 +99,7 @@ impl NoiseFn<f64, 2> for Perlin {
 }
 
 /// 3-dimensional perlin noise
-impl NoiseFn<f64, 3> for Perlin {
+impl NoiseFn<f64, 3> for PerlinSurflet {
     fn get(&self, point: [f64; 3]) -> f64 {
         const SCALE_FACTOR: f64 = 3.889_855_325_553_107_4;
 
@@ -166,7 +166,7 @@ impl NoiseFn<f64, 3> for Perlin {
 }
 
 /// 4-dimensional perlin noise
-impl NoiseFn<f64, 4> for Perlin {
+impl NoiseFn<f64, 4> for PerlinSurflet {
     fn get(&self, point: [f64; 4]) -> f64 {
         const SCALE_FACTOR: f64 = 4.424_369_240_215_691;
 

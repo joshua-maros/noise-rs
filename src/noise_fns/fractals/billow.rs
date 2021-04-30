@@ -1,6 +1,8 @@
 use crate::{
+    fractals::MultiFractal,
+    generators::Perlin,
     math::{self, scale_shift},
-    noise_fns::{MultiFractal, NoiseFn, Perlin, Seedable},
+    NoiseFn, Seedable,
 };
 
 /// Noise function that outputs "billowy" noise.
