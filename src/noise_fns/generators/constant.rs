@@ -1,4 +1,4 @@
-use crate::noise_fns::NoiseFn;
+use crate::NoiseFn;
 
 /// Noise function that outputs a constant value.
 ///

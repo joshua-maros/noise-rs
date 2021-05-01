@@ -1,4 +1,4 @@
-use crate::{SamplePoint, math::scale_shift, noise_fns::NoiseFn};
+use crate::{SamplePoint, math::scale_shift, NoiseFn};
 
 /// Noise function that maps the output value from the source function onto an
 /// exponential curve.

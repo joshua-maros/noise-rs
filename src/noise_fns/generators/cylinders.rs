@@ -1,4 +1,4 @@
-use crate::{noise_fns::NoiseFn, SamplePoint};
+use crate::{NoiseFn, SamplePoint};
 
 /// Noise function that outputs concentric cylinders.
 ///

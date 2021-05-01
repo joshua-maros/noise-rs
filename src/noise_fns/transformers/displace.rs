@@ -1,4 +1,4 @@
-use crate::noise_fns::NoiseFn;
+use crate::NoiseFn;
 
 /// Noise function that uses multiple source functions to displace each coordinate
 /// of the input value before returning the output value from the `source` function.

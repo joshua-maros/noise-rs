@@ -1,4 +1,4 @@
-use crate::{noise_fns::NoiseFn, SamplePoint};
+use crate::{NoiseFn, SamplePoint};
 
 /// Noise function that applies a scaling factor and a bias to the output value
 /// from the source function.

@@ -1,4 +1,4 @@
-use crate::{math::interpolate, noise_fns::NoiseFn, SamplePoint};
+use crate::{math::interpolate, NoiseFn, SamplePoint};
 
 /// Noise function that maps the output value from the source function onto a
 /// terrace-forming curve.

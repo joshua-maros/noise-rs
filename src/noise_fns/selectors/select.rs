@@ -1,6 +1,6 @@
 use crate::{
     math::{interpolate, s_curve::cubic::Cubic},
-    noise_fns::NoiseFn,
+    NoiseFn,
     SamplePoint,
 };
 

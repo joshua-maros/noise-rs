@@ -1,4 +1,4 @@
-use crate::{noise_fns::NoiseFn, SamplePoint};
+use crate::{NoiseFn, SamplePoint};
 
 /// Noise function that negates the output value from the source function.
 pub struct Negate<Source> {
