@@ -17,8 +17,8 @@ macro_rules! combiner {
                 Self { source1, source2 }
             }
 
-            with!(source1: A);
-            with!(source2: B);
+            with!(pub source1: A);
+            with!(pub source2: B);
         }
 
         impl<A, B, P: SamplePoint + Clone> NoiseFn<P> for $name<A, B>

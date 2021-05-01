@@ -1,4 +1,4 @@
-use crate::{SamplePoint, math::interpolate, NoiseFn};
+use crate::{math::interpolate, NoiseFn, SamplePoint};
 
 /// Noise function that maps the output value from the source function onto an
 /// arbitrary function curve.

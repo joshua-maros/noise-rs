@@ -1,6 +1,5 @@
+use crate::NoiseFn;
 use num_traits::{Num, ToPrimitive};
-
-use crate::{NoiseFn, SamplePoint};
 
 /// Noise function that outputs a checkerboard pattern.
 ///

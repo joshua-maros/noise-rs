@@ -53,9 +53,3 @@ where
         }
     }
 }
-
-fn quick_eq(a: &[f64], b: &[f64]) -> bool {
-    assert_eq!(a.len(), b.len());
-
-    a.iter().eq(b)
-}

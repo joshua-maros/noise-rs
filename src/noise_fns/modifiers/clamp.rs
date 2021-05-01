@@ -1,4 +1,4 @@
-use crate::{SamplePoint, NoiseFn};
+use crate::{NoiseFn, SamplePoint};
 
 /// Noise function that clamps the output value from the source function to a
 /// range of values.
@@ -40,8 +40,10 @@ impl<Source> Clamp<Source> {
     }
 }
 
-impl<P, Source> NoiseFn<P> for Clamp<Source> 
-where P: SamplePoint, Source: NoiseFn<P>
+impl<P, Source> NoiseFn<P> for Clamp<Source>
+where
+    P: SamplePoint,
+    Source: NoiseFn<P>,
 {
     fn get(&self, point: P) -> f64 {
         let value = self.source.get(point);

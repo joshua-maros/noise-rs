@@ -296,7 +296,7 @@ where
         debug_assert!(self.layers.len() > 0);
         let mut seed_gen = rand_xorshift::XorShiftRng::seed_from_u64(self.seed as _);
         let layers = (0..self.layers.len())
-            .map(|layer| function_template.clone().with_seed(seed_gen.gen()))
+            .map(|_| function_template.clone().with_seed(seed_gen.gen()))
             .collect();
         Fractal {
             layers,
@@ -325,7 +325,7 @@ where
             self.layers
         } else if current_num_layers > layers {
             let mut o = self.layers;
-            o.split_off(layers);
+            drop(o.split_off(layers));
             o
         } else {
             let mut o = self.layers;
