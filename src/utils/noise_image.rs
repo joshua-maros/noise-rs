@@ -13,10 +13,10 @@ pub struct NoiseImage {
 
 impl NoiseImage {
     pub fn new(width: usize, height: usize) -> Self {
-        Self::initialize().set_size(width, height)
+        Self::initialize().with_size(width, height)
     }
 
-    pub fn set_size(self, width: usize, height: usize) -> Self {
+    pub fn with_size(self, width: usize, height: usize) -> Self {
         // Check for invalid width or height.
         assert!(width < RASTER_MAX_WIDTH as usize);
         assert!(height < RASTER_MAX_HEIGHT as usize);
@@ -46,14 +46,14 @@ impl NoiseImage {
         }
     }
 
-    pub fn set_border_color(self, color: Color) -> Self {
+    pub fn with_border_color(self, color: Color) -> Self {
         Self {
             border_color: color,
             ..self
         }
     }
 
-    pub fn set_value(&mut self, x: usize, y: usize, value: Color) {
+    pub fn with_value(&mut self, x: usize, y: usize, value: Color) {
         let (width, height) = self.size;
 
         if x < width && y < height {

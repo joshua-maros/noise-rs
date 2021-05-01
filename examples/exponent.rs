@@ -4,7 +4,7 @@ use noise::{utils::*, Exponent, Perlin};
 
 fn main() {
     let perlin = Perlin::default();
-    let exponent = Exponent::new(&perlin).set_exponent(3.0);
+    let exponent = Exponent::new(&perlin).with_exponent(3.0);
 
     PlaneMapBuilder::new(&exponent)
         .build()

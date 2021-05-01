@@ -4,8 +4,8 @@
 
 use crate::{
     gradient, math,
-    noise_fns::{NoiseFn, Seedable},
     permutationtable::{NoiseHasher, PermutationTable},
+    NoiseFn, Seedable,
 };
 use std::ops::Add;
 
@@ -46,7 +46,7 @@ impl Default for OpenSimplex {
 
 impl Seedable for OpenSimplex {
     /// Sets the seed value for Open Simplex noise
-    fn set_seed(self, seed: u32) -> Self {
+    fn with_seed(self, seed: u32) -> Self {
         // If the new seed is the same as the current seed, just return self.
         if self.seed == seed {
             return self;
@@ -67,7 +67,7 @@ impl Seedable for OpenSimplex {
 /// 2-dimensional [`OpenSimplex` Noise](http://uniblock.tumblr.com/post/97868843242/noise)
 ///
 /// This is a slower but higher quality form of gradient noise than `Perlin` 2D.
-impl NoiseFn<f64, 2> for OpenSimplex {
+impl NoiseFn<[f64; 2]> for OpenSimplex {
     fn get(&self, point: [f64; 2]) -> f64 {
         fn gradient(perm_table: &PermutationTable, vertex: [f64; 2], pos: [f64; 2]) -> f64 {
             let attn = 2.0 - math::dot2(pos, pos);
@@ -148,7 +148,7 @@ impl NoiseFn<f64, 2> for OpenSimplex {
 /// 3-dimensional [`OpenSimplex` Noise](http://uniblock.tumblr.com/post/97868843242/noise)
 ///
 /// This is a slower but higher quality form of gradient noise than `Perlin` 3D.
-impl NoiseFn<f64, 3> for OpenSimplex {
+impl NoiseFn<[f64; 3]> for OpenSimplex {
     fn get(&self, point: [f64; 3]) -> f64 {
         fn gradient(perm_table: &PermutationTable, vertex: [f64; 3], pos: [f64; 3]) -> f64 {
             let attn = 2.0 - math::dot3(pos, pos);
@@ -282,7 +282,7 @@ impl NoiseFn<f64, 3> for OpenSimplex {
 /// 4-dimensional [`OpenSimplex` Noise](http://uniblock.tumblr.com/post/97868843242/noise)
 ///
 /// This is a slower but higher quality form of gradient noise than `Perlin` 4D.
-impl NoiseFn<f64, 4> for OpenSimplex {
+impl NoiseFn<[f64; 4]> for OpenSimplex {
     fn get(&self, point: [f64; 4]) -> f64 {
         #[inline(always)]
         fn gradient(perm_table: &PermutationTable, vertex: [f64; 4], pos: [f64; 4]) -> f64 {

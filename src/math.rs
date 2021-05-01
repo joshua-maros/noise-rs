@@ -1,10 +1,107 @@
 //! An ultra-light private math library to make our short lives easier as we
 //! implement super-complex noise stuff.
 
-use std::ops::{Add, Mul, Sub};
+use num_traits::Num;
+use std::ops::{Add, Sub, Mul};
 
 pub(crate) mod interpolate;
 pub(crate) mod s_curve;
+
+/// Represents a type which can be used to sample a noise function. Mathematically it is not always
+/// treated as a point, some functions like ScalePoint will treat it like a vector.
+#[cfg(feature = "const_generics")]
+pub trait SamplePoint {
+    type Element: Num;
+    const DIMS: usize;
+
+    fn into_raw(self) -> [Self::Element; Self::DIMS];
+    fn from_raw(raw: [Self::Element; Self::DIMS]) -> Self;
+}
+
+#[cfg(feature = "const_generics")]
+impl<E, const D: usize> SamplePoint for [E; D]
+where
+    E: Num,
+{
+    type Element = E;
+    const DIMS: usize = D;
+
+    fn into_raw(self) -> [Self::Element; Self::DIMS] {
+        self
+    }
+
+    fn from_raw(raw: [Self::Element; Self::DIMS]) -> Self {
+        raw
+    }
+}
+
+#[cfg(not(feature = "const_generics"))]
+pub trait SamplePoint {
+    type Element: PartialEq + Copy + Zero + One + Add + Sub + Mul;
+    type ElementArray;
+}
+
+#[cfg(not(feature = "const_generics"))]
+impl<E> SamplePoint for [E; 1] {
+    type Element = E;
+    type ElementArray = [E; 1];
+}
+
+pub(crate) trait SamplePointMath {
+    type Scalar;
+
+    /// Returns a new instance of this point with all coordinates set to zero.
+    fn zero() -> Self;
+    /// Returns a new instance of this point with all coordinates set to one. This function is
+    /// called 'ones' instead of 'one' since the magnitude of the produced value is more than one
+    /// if the point is more than one-dimensional.
+    fn ones() -> Self;
+    /// Adds self and other element-wise.
+    fn add(self, other: Self) -> Self;
+    /// Multiplies self and other element-wise.
+    fn mul(self, other: Self) -> Self;
+    /// Multiplies all elements of self by a scalar.
+    fn mul_scalar(self, scalar: Self::Scalar) -> Self;
+}
+
+#[cfg(feature = "const_generics")]
+impl<P: SamplePoint> SamplePointMath for P {
+    type Scalar = P::Element;
+
+    fn zero() -> Self {
+        P::from_raw([P::Element::zero(); P::DIMS])
+    }
+
+    fn ones() -> Self {
+        P::from_raw([P::Element::one(); P::DIMS])
+    }
+
+    fn add(self, other: Self) -> Self {
+        let mut result = self.into_raw();
+        let other = other.into_raw();
+        for dim in 0..P::DIMS {
+            result[dim] += other[dim];
+        }
+        P::from_raw(result)
+    }
+
+    fn mul(self, other: Self) -> Self {
+        let mut result = self.into_raw();
+        let other = other.into_raw();
+        for dim in 0..P::DIMS {
+            result[dim] *= other[dim];
+        }
+        P::from_raw(result)
+    }
+
+    fn mul_scalar(self, scalar: P::Element) -> Self {
+        let mut result = self.into_raw();
+        for dim in 0..P::DIMS {
+            result[dim] *= scalar;
+        }
+        P::from_raw(result)
+    }
+}
 
 /// Cast a numeric type without having to unwrap - we don't expect any overflow
 /// errors...

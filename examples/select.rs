@@ -8,11 +8,11 @@ fn main() {
     let perlin = &Perlin::default();
     let constant = &Constant::new(0.5);
     let select1 = Select::new(&perlin, &cylinders, &checkerboard)
-        .set_bounds(0.0, 1.0)
-        .set_falloff(0.5);
+        .with_bounds(0.0, 1.0)
+        .with_falloff(0.5);
     let select2 = Select::new(&perlin, &constant, &checkerboard)
-        .set_bounds(0.0, 1.0)
-        .set_falloff(0.0);
+        .with_bounds(0.0, 1.0)
+        .with_falloff(0.0);
 
     PlaneMapBuilder::new(&select1)
         .build()

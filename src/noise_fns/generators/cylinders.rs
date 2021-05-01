@@ -1,4 +1,4 @@
-use crate::noise_fns::NoiseFn;
+use crate::{noise_fns::NoiseFn, SamplePoint};
 
 /// Noise function that outputs concentric cylinders.
 ///
@@ -6,22 +6,11 @@ use crate::noise_fns::NoiseFn;
 /// cylinders are oriented along the z axis similar to the concentric rings of
 /// a tree. Each cylinder extends infinitely along the z axis.
 #[derive(Clone, Copy, Debug)]
-pub struct Cylinders {
-    /// Frequency of the concentric objects.
-    pub frequency: f64,
-}
+pub struct Cylinders;
 
 impl Cylinders {
-    pub const DEFAULT_FREQUENCY: f64 = 1.0;
-
     pub fn new() -> Self {
-        Self {
-            frequency: Self::DEFAULT_FREQUENCY,
-        }
-    }
-
-    pub fn set_frequency(self, frequency: f64) -> Self {
-        Self { frequency }
+        Self
     }
 }
 
@@ -31,11 +20,16 @@ impl Default for Cylinders {
     }
 }
 
-impl<const N: usize> NoiseFn<f64, N> for Cylinders {
-    fn get(&self, point: [f64; N]) -> f64 {
+impl<P> NoiseFn<P> for Cylinders
+where
+    P: SamplePoint,
+    P::Element: Into<f64>,
+{
+    fn get(&self, point: P) -> f64 {
+        let point = point.into_raw();
         // Scale the inputs by the frequency.
-        let x = point[0] * self.frequency;
-        let y = point[1] * self.frequency;
+        let x = point[0].into();
+        let y = point[1].into();
 
         // Calculate the distance of the point from the origin.
         let dist_from_center = (x.powi(2) + y.powi(2)).sqrt();

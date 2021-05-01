@@ -4,7 +4,7 @@ use noise::{utils::*, Cylinders, RotatePoint};
 
 fn main() {
     let cylinders = Cylinders::new();
-    let rotate_point = RotatePoint::new(cylinders).set_x_angle(60.0);
+    let rotate_point = RotatePoint::new(cylinders).with_x_angle(60.0);
 
     PlaneMapBuilder::new(&rotate_point)
         .build()

@@ -114,7 +114,7 @@ impl Default for SuperSimplex {
 
 impl Seedable for SuperSimplex {
     /// Sets the seed value for Super Simplex noise
-    fn set_seed(self, seed: u32) -> Self {
+    fn with_seed(self, seed: u32) -> Self {
         // If the new seed is the same as the current seed, just return self.
         if self.seed == seed {
             return self;
@@ -133,7 +133,7 @@ impl Seedable for SuperSimplex {
 }
 
 /// 2-dimensional Super Simplex noise
-impl NoiseFn<f64, 2> for SuperSimplex {
+impl NoiseFn<[f64; 2]> for SuperSimplex {
     fn get(&self, point: [f64; 2]) -> f64 {
         let mut value = 0.0;
 
@@ -175,7 +175,7 @@ impl NoiseFn<f64, 2> for SuperSimplex {
 }
 
 /// 3-dimensional Super Simplex noise
-impl NoiseFn<f64, 3> for SuperSimplex {
+impl NoiseFn<[f64; 3]> for SuperSimplex {
     fn get(&self, point: [f64; 3]) -> f64 {
         let mut value = 0.0;
 

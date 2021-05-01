@@ -10,11 +10,30 @@
 //! ```
 
 #![deny(missing_copy_implementations)]
+#![allow(incomplete_features)]
+#![feature(const_generics)]
+#![feature(const_evaluatable)]
+
+#[doc(hidden)]
+#[macro_use]
+mod with_macro {
+    macro_rules! with {
+        ($vis:vis $property:ident: $type:ty) => {
+            paste::paste! {
+                $vis fn [<with_ $property>](self, $property: $type) -> Self {
+                    Self { $property, ..self }
+                }
+            }
+        };
+    }
+}
 
 pub use crate::noise_fns::*;
+pub use math::SamplePoint;
 
 mod gradient;
 mod math;
 mod noise_fns;
 mod permutationtable;
+pub mod transforms;
 pub mod utils;

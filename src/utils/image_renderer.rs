@@ -26,7 +26,7 @@ impl ImageRenderer {
         }
     }
 
-    pub fn set_gradient(self, gradient: ColorGradient) -> Self {
+    pub fn with_gradient(self, gradient: ColorGradient) -> Self {
         Self { gradient, ..self }
     }
 
@@ -46,8 +46,8 @@ impl ImageRenderer {
         self.light_enabled
     }
 
-    pub fn set_light_azimuth(mut self, azimuth: f64) -> Self {
-        self.light_source.set_azimuth(azimuth);
+    pub fn with_light_azimuth(mut self, azimuth: f64) -> Self {
+        self.light_source.with_azimuth(azimuth);
 
         self
     }
@@ -56,8 +56,8 @@ impl ImageRenderer {
         self.light_source.azimuth
     }
 
-    pub fn set_light_brightness(mut self, brightness: f64) -> Self {
-        self.light_source.set_brightness(brightness);
+    pub fn with_light_brightness(mut self, brightness: f64) -> Self {
+        self.light_source.with_brightness(brightness);
 
         self
     }
@@ -66,8 +66,8 @@ impl ImageRenderer {
         self.light_source.brightness
     }
 
-    pub fn set_light_color(mut self, color: Color) -> Self {
-        self.light_source.set_color(color);
+    pub fn with_light_color(mut self, color: Color) -> Self {
+        self.light_source.with_color(color);
 
         self
     }
@@ -76,8 +76,8 @@ impl ImageRenderer {
         self.light_source.color
     }
 
-    pub fn set_light_contrast(mut self, contrast: f64) -> Self {
-        self.light_source.set_contrast(contrast);
+    pub fn with_light_contrast(mut self, contrast: f64) -> Self {
+        self.light_source.with_contrast(contrast);
 
         self
     }
@@ -86,8 +86,8 @@ impl ImageRenderer {
         self.light_source.contrast
     }
 
-    pub fn set_light_elevation(mut self, elevation: f64) -> Self {
-        self.light_source.set_elevation(elevation);
+    pub fn with_light_elevation(mut self, elevation: f64) -> Self {
+        self.light_source.with_elevation(elevation);
 
         self
     }
@@ -96,8 +96,8 @@ impl ImageRenderer {
         self.light_source.elevation
     }
 
-    pub fn set_light_intensity(mut self, intensity: f64) -> Self {
-        self.light_source.set_intensity(intensity);
+    pub fn with_light_intensity(mut self, intensity: f64) -> Self {
+        self.light_source.with_intensity(intensity);
 
         self
     }
@@ -185,7 +185,7 @@ impl ImageRenderer {
 
                 let destination_color = self.calc_destination_color(source_color, light_intensity);
 
-                destination_image.set_value(x, y, destination_color);
+                destination_image.with_value(x, y, destination_color);
             }
         }
 
@@ -302,7 +302,7 @@ impl ImageRenderer {
                     light_intensity,
                 );
 
-                destination_image.set_value(x, y, destination_color);
+                destination_image.with_value(x, y, destination_color);
             }
         }
 
@@ -413,21 +413,21 @@ impl LightSource {
         }
     }
 
-    pub fn set_azimuth(&mut self, azimuth: f64) {
+    pub fn with_azimuth(&mut self, azimuth: f64) {
         self.azimuth = azimuth;
         self.recalculate_light_values = true;
     }
 
-    pub fn set_brightness(&mut self, brightness: f64) {
+    pub fn with_brightness(&mut self, brightness: f64) {
         self.brightness = brightness;
         self.recalculate_light_values = true;
     }
 
-    pub fn set_color(&mut self, color: Color) {
+    pub fn with_color(&mut self, color: Color) {
         self.color = color;
     }
 
-    pub fn set_contrast(&mut self, contrast: f64) {
+    pub fn with_contrast(&mut self, contrast: f64) {
         if contrast >= 0.0 {
             self.contrast = contrast;
             self.recalculate_light_values = true;
@@ -436,12 +436,12 @@ impl LightSource {
         }
     }
 
-    pub fn set_elevation(&mut self, elevation: f64) {
+    pub fn with_elevation(&mut self, elevation: f64) {
         self.elevation = elevation;
         self.recalculate_light_values = true;
     }
 
-    pub fn set_intensity(&mut self, intensity: f64) {
+    pub fn with_intensity(&mut self, intensity: f64) {
         self.intensity = intensity;
         self.recalculate_light_values = true;
     }

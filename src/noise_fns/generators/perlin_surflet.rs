@@ -33,7 +33,7 @@ impl Default for PerlinSurflet {
 
 impl Seedable for PerlinSurflet {
     /// Sets the seed value for Perlin noise
-    fn set_seed(self, seed: u32) -> Self {
+    fn with_seed(self, seed: u32) -> Self {
         // If the new seed is the same as the current seed, just return self.
         if self.seed == seed {
             return self;
@@ -52,7 +52,7 @@ impl Seedable for PerlinSurflet {
 }
 
 /// 2-dimensional perlin noise
-impl NoiseFn<f64, 2> for PerlinSurflet {
+impl NoiseFn<[f64; 2]> for PerlinSurflet {
     fn get(&self, point: [f64; 2]) -> f64 {
         const SCALE_FACTOR: f64 = 3.160_493_827_160_493_7;
 
@@ -99,7 +99,7 @@ impl NoiseFn<f64, 2> for PerlinSurflet {
 }
 
 /// 3-dimensional perlin noise
-impl NoiseFn<f64, 3> for PerlinSurflet {
+impl NoiseFn<[f64; 3]> for PerlinSurflet {
     fn get(&self, point: [f64; 3]) -> f64 {
         const SCALE_FACTOR: f64 = 3.889_855_325_553_107_4;
 
@@ -166,7 +166,7 @@ impl NoiseFn<f64, 3> for PerlinSurflet {
 }
 
 /// 4-dimensional perlin noise
-impl NoiseFn<f64, 4> for PerlinSurflet {
+impl NoiseFn<[f64; 4]> for PerlinSurflet {
     fn get(&self, point: [f64; 4]) -> f64 {
         const SCALE_FACTOR: f64 = 4.424_369_240_215_691;
 

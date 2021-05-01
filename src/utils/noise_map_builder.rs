@@ -1,9 +1,9 @@
 use crate::{math::interpolate, noise_fns::NoiseFn, utils::noise_map::NoiseMap};
 
 pub trait NoiseMapBuilder<'a> {
-    fn set_size(self, width: usize, height: usize) -> Self;
+    fn with_size(self, width: usize, height: usize) -> Self;
 
-    fn set_source_module(self, source_module: &'a dyn NoiseFn<f64, 3>) -> Self;
+    fn with_source_module(self, source_module: &'a dyn NoiseFn<f64, 3>) -> Self;
 
     fn size(&self) -> (usize, usize);
 
@@ -27,7 +27,7 @@ impl<'a> CylinderMapBuilder<'a> {
         }
     }
 
-    pub fn set_angle_bounds(self, lower_bound: f64, upper_bound: f64) -> Self {
+    pub fn with_angle_bounds(self, lower_bound: f64, upper_bound: f64) -> Self {
         let angle_bounds = if lower_bound >= upper_bound {
             eprintln!(
                 "lower bound {:?} is larger than upper bound {:?}, switching order",
@@ -44,7 +44,7 @@ impl<'a> CylinderMapBuilder<'a> {
         }
     }
 
-    pub fn set_height_bounds(self, lower_bound: f64, upper_bound: f64) -> Self {
+    pub fn with_height_bounds(self, lower_bound: f64, upper_bound: f64) -> Self {
         let height_bounds = if lower_bound >= upper_bound {
             eprintln!(
                 "lower bound {:?} is larger than upper bound {:?}, switching order",
@@ -71,14 +71,14 @@ impl<'a> CylinderMapBuilder<'a> {
 }
 
 impl<'a> NoiseMapBuilder<'a> for CylinderMapBuilder<'a> {
-    fn set_size(self, width: usize, height: usize) -> Self {
+    fn with_size(self, width: usize, height: usize) -> Self {
         CylinderMapBuilder {
             size: (width, height),
             ..self
         }
     }
 
-    fn set_source_module(self, source_module: &'a dyn NoiseFn<f64, 3>) -> Self {
+    fn with_source_module(self, source_module: &'a dyn NoiseFn<f64, 3>) -> Self {
         CylinderMapBuilder {
             source_module,
             ..self
@@ -116,7 +116,7 @@ impl<'a> NoiseMapBuilder<'a> for CylinderMapBuilder<'a> {
                     value, point_x, current_height, point_z
                 );
 
-                result_map.set_value(x, y, value);
+                result_map.with_value(x, y, value);
             }
         }
 
@@ -143,21 +143,21 @@ impl<'a> PlaneMapBuilder<'a> {
         }
     }
 
-    pub fn set_is_seamless(self, is_seamless: bool) -> Self {
+    pub fn with_is_seamless(self, is_seamless: bool) -> Self {
         PlaneMapBuilder {
             is_seamless,
             ..self
         }
     }
 
-    pub fn set_x_bounds(self, lower_x_bound: f64, upper_x_bound: f64) -> Self {
+    pub fn with_x_bounds(self, lower_x_bound: f64, upper_x_bound: f64) -> Self {
         PlaneMapBuilder {
             x_bounds: (lower_x_bound, upper_x_bound),
             ..self
         }
     }
 
-    pub fn set_y_bounds(self, lower_y_bound: f64, upper_y_bound: f64) -> Self {
+    pub fn with_y_bounds(self, lower_y_bound: f64, upper_y_bound: f64) -> Self {
         PlaneMapBuilder {
             y_bounds: (lower_y_bound, upper_y_bound),
             ..self
@@ -174,14 +174,14 @@ impl<'a> PlaneMapBuilder<'a> {
 }
 
 impl<'a> NoiseMapBuilder<'a> for PlaneMapBuilder<'a> {
-    fn set_size(self, width: usize, height: usize) -> Self {
+    fn with_size(self, width: usize, height: usize) -> Self {
         PlaneMapBuilder {
             size: (width, height),
             ..self
         }
     }
 
-    fn set_source_module(self, source_module: &'a dyn NoiseFn<f64, 3>) -> Self {
+    fn with_source_module(self, source_module: &'a dyn NoiseFn<f64, 3>) -> Self {
         PlaneMapBuilder {
             source_module,
             ..self
@@ -232,7 +232,7 @@ impl<'a> NoiseMapBuilder<'a> for PlaneMapBuilder<'a> {
                     self.source_module.get([current_x, current_y, 0.0])
                 };
 
-                result_map.set_value(x, y, final_value);
+                result_map.with_value(x, y, final_value);
             }
         }
 
@@ -257,21 +257,21 @@ impl<'a> SphereMapBuilder<'a> {
         }
     }
 
-    pub fn set_latitude_bounds(self, min_lat_bound: f64, max_lat_bound: f64) -> Self {
+    pub fn with_latitude_bounds(self, min_lat_bound: f64, max_lat_bound: f64) -> Self {
         SphereMapBuilder {
             latitude_bounds: (min_lat_bound, max_lat_bound),
             ..self
         }
     }
 
-    pub fn set_longitude_bounds(self, min_lon_bound: f64, max_lon_bound: f64) -> Self {
+    pub fn with_longitude_bounds(self, min_lon_bound: f64, max_lon_bound: f64) -> Self {
         SphereMapBuilder {
             longitude_bounds: (min_lon_bound, max_lon_bound),
             ..self
         }
     }
 
-    pub fn set_bounds(
+    pub fn with_bounds(
         self,
         min_lat_bound: f64,
         max_lat_bound: f64,
@@ -295,14 +295,14 @@ impl<'a> SphereMapBuilder<'a> {
 }
 
 impl<'a> NoiseMapBuilder<'a> for SphereMapBuilder<'a> {
-    fn set_size(self, width: usize, height: usize) -> Self {
+    fn with_size(self, width: usize, height: usize) -> Self {
         SphereMapBuilder {
             size: (width, height),
             ..self
         }
     }
 
-    fn set_source_module(self, source_module: &'a dyn NoiseFn<f64, 3>) -> Self {
+    fn with_source_module(self, source_module: &'a dyn NoiseFn<f64, 3>) -> Self {
         SphereMapBuilder {
             source_module,
             ..self
@@ -332,7 +332,7 @@ impl<'a> NoiseMapBuilder<'a> for SphereMapBuilder<'a> {
 
                 let point = lat_lon_to_xyz(current_lat, current_lon);
 
-                result_map.set_value(x, y, self.source_module.get(point));
+                result_map.with_value(x, y, self.source_module.get(point));
             }
         }
 

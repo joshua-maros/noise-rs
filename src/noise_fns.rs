@@ -1,3 +1,5 @@
+use crate::math::SamplePoint;
+
 pub mod cache;
 pub mod combiners;
 pub mod fractals;
@@ -19,21 +21,24 @@ pub mod transformers;
 /// * Mathematically changing the output value from another noise function
 ///     in various ways.
 /// * Combining the output values from two noise functions in various ways.
-pub trait NoiseFn<T, const DIM: usize> {
-    fn get(&self, point: [T; DIM]) -> f64;
+pub trait NoiseFn<P: SamplePoint> {
+    fn get(&self, point: P) -> f64;
 }
 
-impl<'a, T, M: NoiseFn<T, DIM>, const DIM: usize> NoiseFn<T, DIM> for &'a M {
+impl<'a, P, M: NoiseFn<P>> NoiseFn<P> for &'a M {
     #[inline]
-    fn get(&self, point: [T; DIM]) -> f64 {
+    fn get(&self, point: P) -> f64 {
         M::get(*self, point)
     }
 }
 
 /// Trait for functions that require a seed before generating their values
 pub trait Seedable {
+    /// Creates a new instance of this noise function with the provided seed.
+    fn from_seed(seed: u32) -> Self;
+
     /// Set the seed for the function implementing the `Seedable` trait
-    fn set_seed(self, seed: u32) -> Self;
+    fn with_seed(self, seed: u32) -> Self;
 
     /// Getter to retrieve the seed from the function
     fn seed(&self) -> u32;

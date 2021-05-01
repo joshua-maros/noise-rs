@@ -17,11 +17,11 @@ impl GradientDomain {
         Self { min, max }
     }
 
-    pub fn set_min(&mut self, min: f64) {
+    pub fn with_min(&mut self, min: f64) {
         self.min = min;
     }
 
-    pub fn set_max(&mut self, max: f64) {
+    pub fn with_max(&mut self, max: f64) {
         self.max = max;
     }
 }
@@ -48,12 +48,12 @@ impl ColorGradient {
         // first check to see if the position is within the domain of the gradient. if the position
         // is not within the domain, expand the domain and add the GradientPoint
         if self.domain.min > pos {
-            self.domain.set_min(pos);
+            self.domain.with_min(pos);
             // since the new position is the smallest value, insert it at the beginning of the
             // gradient
             self.gradient_points.insert(0, new_point);
         } else if self.domain.max < pos {
-            self.domain.set_max(pos);
+            self.domain.with_max(pos);
 
             // since the new position is at the largest value, insert it at the end of the gradient
             self.gradient_points.push(new_point)

@@ -1,4 +1,6 @@
-use crate::noise_fns::NoiseFn;
+use num_traits::ToPrimitive;
+
+use crate::{noise_fns::NoiseFn, SamplePoint};
 
 /// Noise function that outputs a checkerboard pattern.
 ///
@@ -11,22 +13,22 @@ use crate::noise_fns::NoiseFn;
 #[derive(Clone, Copy, Debug)]
 pub struct Checkerboard {
     // Controls the size of the block in 2^(size).
-    size: usize,
+    size: u64,
 }
 
 impl Checkerboard {
-    const DEFAULT_SIZE: usize = 0;
+    const DEFAULT_SIZE: u64 = 0;
 
     /// Controls the size of the block in 2^(size) units.
-    pub fn new(size: usize) -> Self {
+    pub fn new(size: u64) -> Self {
         Self { size: 1 << size }
     }
 
-    pub fn set_size(self, size: usize) -> Self {
+    pub fn with_size(self, size: u64) -> Self {
         Self { size: 1 << size }
     }
 
-    pub fn size(self) -> usize {
+    pub fn size(self) -> u64 {
         self.size
     }
 }
@@ -39,11 +41,16 @@ impl Default for Checkerboard {
     }
 }
 
-impl<const N: usize> NoiseFn<f64, N> for Checkerboard {
-    fn get(&self, point: [f64; N]) -> f64 {
+impl<P> NoiseFn<P> for Checkerboard
+where
+    P: SamplePoint,
+    P::Element: ToPrimitive,
+{
+    fn get(&self, point: P) -> f64 {
         let result = point
+            .into_raw()
             .iter()
-            .map(|&a| a.floor() as usize)
+            .map(|&a| a.to_u64().unwrap() as u64)
             .fold(0, |a, b| (a & self.size) ^ (b & self.size));
 
         if result > 0 {

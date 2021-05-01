@@ -36,7 +36,7 @@ impl Worley {
     }
 
     /// Sets the distance function used by the Worley cells.
-    pub fn set_distance_function<F>(self, function: F) -> Self
+    pub fn with_distance_function<F>(self, function: F) -> Self
     where
         F: Fn(&[f64], &[f64]) -> f64 + 'static,
     {
@@ -48,7 +48,7 @@ impl Worley {
 
     /// Enables or disables applying the distance from the nearest seed point
     /// to the output value.
-    pub fn set_return_type(self, return_type: ReturnType) -> Self {
+    pub fn with_return_type(self, return_type: ReturnType) -> Self {
         Self {
             return_type,
             ..self
@@ -56,7 +56,7 @@ impl Worley {
     }
 
     /// Sets the frequency of the seed points.
-    pub fn set_frequency(self, frequency: f64) -> Self {
+    pub fn with_frequency(self, frequency: f64) -> Self {
         Self { frequency, ..self }
     }
 }
@@ -69,7 +69,7 @@ impl Default for Worley {
 
 impl Seedable for Worley {
     /// Sets the seed value used by the Worley cells.
-    fn set_seed(self, seed: u32) -> Self {
+    fn with_seed(self, seed: u32) -> Self {
         // If the new seed is the same as the current seed, just return self.
         if self.seed == seed {
             return self;
@@ -143,7 +143,7 @@ pub mod distance_functions {
     }
 }
 
-impl NoiseFn<f64, 2> for Worley {
+impl NoiseFn<[f64; 2]> for Worley {
     fn get(&self, point: [f64; 2]) -> f64 {
         worley_2d(
             &self.perm_table,
@@ -237,7 +237,7 @@ fn get_vec2(index: usize) -> [f64; 2] {
     }
 }
 
-impl NoiseFn<f64, 3> for Worley {
+impl NoiseFn<[f64; 3]> for Worley {
     fn get(&self, point: [f64; 3]) -> f64 {
         worley_3d(
             &self.perm_table,
@@ -363,7 +363,7 @@ fn get_vec3(index: usize) -> [f64; 3] {
 }
 
 #[allow(clippy::cognitive_complexity)]
-impl NoiseFn<f64, 4> for Worley {
+impl NoiseFn<[f64; 4]> for Worley {
     fn get(&self, point: [f64; 4]) -> f64 {
         worley_4d(
             &self.perm_table,

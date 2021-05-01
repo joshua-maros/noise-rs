@@ -12,10 +12,10 @@ pub struct NoiseMap {
 
 impl NoiseMap {
     pub fn new(width: usize, height: usize) -> Self {
-        Self::initialize().set_size(width, height)
+        Self::initialize().with_size(width, height)
     }
 
-    pub fn set_size(self, width: usize, height: usize) -> Self {
+    pub fn with_size(self, width: usize, height: usize) -> Self {
         // Check for invalid width or height.
         assert!(width < RASTER_MAX_WIDTH as usize);
         assert!(height < RASTER_MAX_HEIGHT as usize);
@@ -49,7 +49,7 @@ impl NoiseMap {
         self.size
     }
 
-    pub fn set_border_value(self, border_value: f64) -> Self {
+    pub fn with_border_value(self, border_value: f64) -> Self {
         Self {
             border_value,
             ..self
@@ -60,7 +60,7 @@ impl NoiseMap {
         self.border_value
     }
 
-    pub fn set_value(&mut self, x: usize, y: usize, value: f64) {
+    pub fn with_value(&mut self, x: usize, y: usize, value: f64) {
         let (width, height) = self.size;
 
         if x < width && y < height {

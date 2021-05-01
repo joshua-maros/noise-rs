@@ -84,7 +84,7 @@ mod tests {
 
     #[test]
     fn test_random_seed() {
-        let perlin = Perlin::default().set_seed(random());
+        let perlin = Perlin::default().with_seed(random());
         let _ = perlin.get([1.0, 2.0, 3.0]);
     }
 

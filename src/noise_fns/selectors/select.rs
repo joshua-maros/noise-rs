@@ -1,22 +1,23 @@
 use crate::{
     math::{interpolate, s_curve::cubic::Cubic},
     noise_fns::NoiseFn,
+    SamplePoint,
 };
 
 /// Noise function that outputs the value selected from one of two source
 /// functions chosen by the output value from a control function.
-pub struct Select<'a, T, const DIM: usize> {
+pub struct Select<A, B, X> {
     /// Outputs a value.
-    pub source1: &'a dyn NoiseFn<T, DIM>,
+    pub source1: A,
 
     /// Outputs a value.
-    pub source2: &'a dyn NoiseFn<T, DIM>,
+    pub source2: B,
 
     /// Determines the value to select. If the output value from
     /// the control function is within a range of values know as the _selection
     /// range_, this noise function outputs the value from `source2`.
     /// Otherwise, this noise function outputs the value from `source1`.
-    pub control: &'a dyn NoiseFn<T, DIM>,
+    pub control: X,
 
     /// Bounds of the selection range. Default is 0.0 to 1.0.
     pub bounds: (f64, f64),
@@ -25,12 +26,8 @@ pub struct Select<'a, T, const DIM: usize> {
     pub falloff: f64,
 }
 
-impl<'a, T, const DIM: usize> Select<'a, T, DIM> {
-    pub fn new(
-        source1: &'a dyn NoiseFn<T, DIM>,
-        source2: &'a dyn NoiseFn<T, DIM>,
-        control: &'a dyn NoiseFn<T, DIM>,
-    ) -> Self {
+impl<A, B, X> Select<A, B, X> {
+    pub fn new(source1: A, source2: B, control: X) -> Self {
         Select {
             source1,
             source2,
@@ -40,23 +37,26 @@ impl<'a, T, const DIM: usize> Select<'a, T, DIM> {
         }
     }
 
-    pub fn set_bounds(self, lower_bound: f64, upper_bound: f64) -> Self {
+    pub fn with_bounds(self, lower_bound: f64, upper_bound: f64) -> Self {
         Select {
             bounds: (lower_bound, upper_bound),
             ..self
         }
     }
 
-    pub fn set_falloff(self, falloff: f64) -> Self {
+    pub fn with_falloff(self, falloff: f64) -> Self {
         Select { falloff, ..self }
     }
 }
 
-impl<'a, T, const DIM: usize> NoiseFn<T, DIM> for Select<'a, T, DIM>
+impl<P, A, B, X> NoiseFn<P> for Select<A, B, X>
 where
-    T: Copy,
+    P: SamplePoint,
+    A: NoiseFn<P>,
+    B: NoiseFn<P>,
+    X: NoiseFn<P>,
 {
-    fn get(&self, point: [T; DIM]) -> f64 {
+    fn get(&self, point: P) -> f64 {
         let control_value = self.control.get(point);
         let (lower, upper) = self.bounds;
 

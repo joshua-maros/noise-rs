@@ -204,7 +204,7 @@ fn main() {
         .build()
         .write_to_file("super_simplex.png");
 
-    let super_simplex = super_simplex.set_seed(1);
+    let super_simplex = super_simplex.with_seed(1);
 
     PlaneMapBuilder::new(&super_simplex)
         .build()

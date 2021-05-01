@@ -11,7 +11,7 @@ fn main() {
         .build()
         .write_to_file("open_simplex.png");
 
-    let open_simplex = open_simplex.set_seed(1);
+    let open_simplex = open_simplex.with_seed(1);
 
     PlaneMapBuilder::new(&open_simplex)
         .build()

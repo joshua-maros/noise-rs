@@ -17,7 +17,7 @@ fn bench_worley2d(c: &mut Criterion) {
     group.plot_config(plot_config);
 
     let worley = Worley::default();
-    let worley_range = Worley::default().set_return_type(ReturnType::Distance);
+    let worley_range = Worley::default().with_return_type(ReturnType::Distance);
 
     let mut rng = rand_pcg::Pcg64Mcg::new(rand::random());
 
@@ -60,7 +60,7 @@ fn bench_worley3d(c: &mut Criterion) {
     group.plot_config(plot_config);
 
     let worley = Worley::default();
-    let worley_range = Worley::default().set_return_type(ReturnType::Distance);
+    let worley_range = Worley::default().with_return_type(ReturnType::Distance);
 
     let mut rng = rand_pcg::Pcg64Mcg::new(rand::random());
 
@@ -103,7 +103,7 @@ fn bench_worley4d(c: &mut Criterion) {
     group.plot_config(plot_config);
 
     let worley = Worley::default();
-    let worley_range = Worley::default().set_return_type(ReturnType::Distance);
+    let worley_range = Worley::default().with_return_type(ReturnType::Distance);
 
     let mut rng = rand_pcg::Pcg64Mcg::new(rand::random());
 

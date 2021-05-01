@@ -1,4 +1,4 @@
-use crate::{fractals::Fbm, fractals::MultiFractal, NoiseFn, Seedable};
+use crate::{fractals::BasicMono, fractals::MultiFractal, NoiseFn, Seedable};
 
 /// Noise function that randomly displaces the input value before returning the
 /// output value from the source function.
@@ -24,10 +24,10 @@ pub struct Turbulence<Source> {
     pub roughness: usize,
 
     seed: u32,
-    x_distort_function: Fbm,
-    y_distort_function: Fbm,
-    z_distort_function: Fbm,
-    u_distort_function: Fbm,
+    x_distort_function: BasicMono,
+    y_distort_function: BasicMono,
+    z_distort_function: BasicMono,
+    u_distort_function: BasicMono,
 }
 
 impl<Source> Turbulence<Source> {
@@ -43,60 +43,60 @@ impl<Source> Turbulence<Source> {
             frequency: Self::DEFAULT_FREQUENCY,
             power: Self::DEFAULT_POWER,
             roughness: Self::DEFAULT_ROUGHNESS,
-            x_distort_function: Fbm::new()
-                .set_seed(Self::DEFAULT_SEED)
-                .set_octaves(Self::DEFAULT_ROUGHNESS)
-                .set_frequency(Self::DEFAULT_FREQUENCY),
-            y_distort_function: Fbm::new()
-                .set_seed(Self::DEFAULT_SEED + 1)
-                .set_octaves(Self::DEFAULT_ROUGHNESS)
-                .set_frequency(Self::DEFAULT_FREQUENCY),
-            z_distort_function: Fbm::new()
-                .set_seed(Self::DEFAULT_SEED + 2)
-                .set_octaves(Self::DEFAULT_ROUGHNESS)
-                .set_frequency(Self::DEFAULT_FREQUENCY),
-            u_distort_function: Fbm::new()
-                .set_seed(Self::DEFAULT_SEED + 3)
-                .set_octaves(Self::DEFAULT_ROUGHNESS)
-                .set_frequency(Self::DEFAULT_FREQUENCY),
+            x_distort_function: BasicMono::new()
+                .with_seed(Self::DEFAULT_SEED)
+                .with_octaves(Self::DEFAULT_ROUGHNESS)
+                .with_frequency(Self::DEFAULT_FREQUENCY),
+            y_distort_function: BasicMono::new()
+                .with_seed(Self::DEFAULT_SEED + 1)
+                .with_octaves(Self::DEFAULT_ROUGHNESS)
+                .with_frequency(Self::DEFAULT_FREQUENCY),
+            z_distort_function: BasicMono::new()
+                .with_seed(Self::DEFAULT_SEED + 2)
+                .with_octaves(Self::DEFAULT_ROUGHNESS)
+                .with_frequency(Self::DEFAULT_FREQUENCY),
+            u_distort_function: BasicMono::new()
+                .with_seed(Self::DEFAULT_SEED + 3)
+                .with_octaves(Self::DEFAULT_ROUGHNESS)
+                .with_frequency(Self::DEFAULT_FREQUENCY),
         }
     }
 
-    pub fn set_frequency(self, frequency: f64) -> Self {
+    pub fn with_frequency(self, frequency: f64) -> Self {
         Self {
             frequency,
-            x_distort_function: self.x_distort_function.set_frequency(frequency),
-            y_distort_function: self.y_distort_function.set_frequency(frequency),
-            z_distort_function: self.z_distort_function.set_frequency(frequency),
-            u_distort_function: self.u_distort_function.set_frequency(frequency),
+            x_distort_function: self.x_distort_function.with_frequency(frequency),
+            y_distort_function: self.y_distort_function.with_frequency(frequency),
+            z_distort_function: self.z_distort_function.with_frequency(frequency),
+            u_distort_function: self.u_distort_function.with_frequency(frequency),
             ..self
         }
     }
 
-    pub fn set_power(self, power: f64) -> Self {
+    pub fn with_power(self, power: f64) -> Self {
         Self { power, ..self }
     }
 
-    pub fn set_roughness(self, roughness: usize) -> Self {
+    pub fn with_roughness(self, roughness: usize) -> Self {
         Self {
             roughness,
-            x_distort_function: self.x_distort_function.set_octaves(roughness),
-            y_distort_function: self.y_distort_function.set_octaves(roughness),
-            z_distort_function: self.z_distort_function.set_octaves(roughness),
-            u_distort_function: self.u_distort_function.set_octaves(roughness),
+            x_distort_function: self.x_distort_function.with_octaves(roughness),
+            y_distort_function: self.y_distort_function.with_octaves(roughness),
+            z_distort_function: self.z_distort_function.with_octaves(roughness),
+            u_distort_function: self.u_distort_function.with_octaves(roughness),
             ..self
         }
     }
 }
 
 impl<Source> Seedable for Turbulence<Source> {
-    fn set_seed(self, seed: u32) -> Self {
+    fn with_seed(self, seed: u32) -> Self {
         Self {
             seed,
-            x_distort_function: self.x_distort_function.set_seed(seed),
-            y_distort_function: self.y_distort_function.set_seed(seed + 1),
-            z_distort_function: self.z_distort_function.set_seed(seed + 2),
-            u_distort_function: self.u_distort_function.set_seed(seed + 3),
+            x_distort_function: self.x_distort_function.with_seed(seed),
+            y_distort_function: self.y_distort_function.with_seed(seed + 1),
+            z_distort_function: self.z_distort_function.with_seed(seed + 2),
+            u_distort_function: self.u_distort_function.with_seed(seed + 3),
             ..self
         }
     }
