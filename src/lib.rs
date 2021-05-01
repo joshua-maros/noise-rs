@@ -12,7 +12,8 @@
 #![deny(missing_copy_implementations)]
 #![allow(incomplete_features)]
 #![feature(const_generics)]
-#![feature(const_evaluatable)]
+#![feature(const_evaluatable_checked)]
+#![feature(associated_type_defaults)]
 
 #[doc(hidden)]
 #[macro_use]

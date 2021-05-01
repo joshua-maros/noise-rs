@@ -1,4 +1,4 @@
-use num_traits::ToPrimitive;
+use num_traits::{Num, ToPrimitive};
 
 use crate::{NoiseFn, SamplePoint};
 
@@ -41,14 +41,12 @@ impl Default for Checkerboard {
     }
 }
 
-impl<P> NoiseFn<P> for Checkerboard
+impl<E, const N: usize> NoiseFn<[E; N]> for Checkerboard
 where
-    P: SamplePoint,
-    P::Element: ToPrimitive,
+    E: Num + Copy + ToPrimitive,
 {
-    fn get(&self, point: P) -> f64 {
+    fn get(&self, point: [E; N]) -> f64 {
         let result = point
-            .into_raw()
             .iter()
             .map(|&a| a.to_u64().unwrap() as u64)
             .fold(0, |a, b| (a & self.size) ^ (b & self.size));

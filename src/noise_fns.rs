@@ -1,4 +1,9 @@
-use crate::math::SamplePoint;
+use num_traits::Num;
+
+use crate::{
+    math::SamplePoint,
+    transforms::{PointTransform, Transformed, UniformScale},
+};
 
 pub mod cache;
 pub mod combiners;
@@ -23,9 +28,30 @@ pub mod transformers;
 /// * Combining the output values from two noise functions in various ways.
 pub trait NoiseFn<P: SamplePoint> {
     fn get(&self, point: P) -> f64;
+
+    fn transformed<T>(self, transform: T) -> Transformed<Self, T>
+    where
+        Self: Sized,
+        T: PointTransform<P>,
+    {
+        Transformed {
+            source: self,
+            transform,
+        }
+    }
+
+    fn scaled<S: Num>(self, factor: S) -> Transformed<Self, UniformScale<S>>
+    where
+        Self: Sized,
+    {
+        Transformed {
+            source: self,
+            transform: UniformScale::new(factor),
+        }
+    }
 }
 
-impl<'a, P, M: NoiseFn<P>> NoiseFn<P> for &'a M {
+impl<'a, P: SamplePoint, M: NoiseFn<P>> NoiseFn<P> for &'a M {
     #[inline]
     fn get(&self, point: P) -> f64 {
         M::get(*self, point)
@@ -34,9 +60,6 @@ impl<'a, P, M: NoiseFn<P>> NoiseFn<P> for &'a M {
 
 /// Trait for functions that require a seed before generating their values
 pub trait Seedable {
-    /// Creates a new instance of this noise function with the provided seed.
-    fn from_seed(seed: u32) -> Self;
-
     /// Set the seed for the function implementing the `Seedable` trait
     fn with_seed(self, seed: u32) -> Self;
 

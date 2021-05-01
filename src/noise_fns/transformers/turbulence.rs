@@ -1,4 +1,10 @@
-use crate::{fractals::BasicMono, fractals::MultiFractal, NoiseFn, Seedable};
+use crate::{
+    fractals::FractalPerlin,
+    transforms::{Transformed, UniformScale},
+    NoiseFn, Seedable,
+};
+use rand::{Rng, SeedableRng};
+use rand_xorshift::XorShiftRng;
 
 /// Noise function that randomly displaces the input value before returning the
 /// output value from the source function.
@@ -24,10 +30,7 @@ pub struct Turbulence<Source> {
     pub roughness: usize,
 
     seed: u32,
-    x_distort_function: BasicMono,
-    y_distort_function: BasicMono,
-    z_distort_function: BasicMono,
-    u_distort_function: BasicMono,
+    distorters: [Transformed<FractalPerlin, UniformScale<f64>>; 4],
 }
 
 impl<Source> Turbulence<Source> {
@@ -37,40 +40,44 @@ impl<Source> Turbulence<Source> {
     pub const DEFAULT_ROUGHNESS: usize = 3;
 
     pub fn new(source: Source) -> Self {
+        let seed = Self::DEFAULT_SEED;
+        let mut seed_gen = XorShiftRng::seed_from_u64(seed as _);
+        let frequency = Self::DEFAULT_FREQUENCY;
+        let distorters = [
+            NoiseFn::<[f64; 2]>::scaled(
+                FractalPerlin::default().with_seed(seed_gen.gen()),
+                frequency,
+            ),
+            NoiseFn::<[f64; 2]>::scaled(
+                FractalPerlin::default().with_seed(seed_gen.gen()),
+                frequency,
+            ),
+            NoiseFn::<[f64; 2]>::scaled(
+                FractalPerlin::default().with_seed(seed_gen.gen()),
+                frequency,
+            ),
+            NoiseFn::<[f64; 2]>::scaled(
+                FractalPerlin::default().with_seed(seed_gen.gen()),
+                frequency,
+            ),
+        ];
         Self {
             source,
-            seed: Self::DEFAULT_SEED,
-            frequency: Self::DEFAULT_FREQUENCY,
+            seed,
+            frequency,
             power: Self::DEFAULT_POWER,
             roughness: Self::DEFAULT_ROUGHNESS,
-            x_distort_function: BasicMono::new()
-                .with_seed(Self::DEFAULT_SEED)
-                .with_octaves(Self::DEFAULT_ROUGHNESS)
-                .with_frequency(Self::DEFAULT_FREQUENCY),
-            y_distort_function: BasicMono::new()
-                .with_seed(Self::DEFAULT_SEED + 1)
-                .with_octaves(Self::DEFAULT_ROUGHNESS)
-                .with_frequency(Self::DEFAULT_FREQUENCY),
-            z_distort_function: BasicMono::new()
-                .with_seed(Self::DEFAULT_SEED + 2)
-                .with_octaves(Self::DEFAULT_ROUGHNESS)
-                .with_frequency(Self::DEFAULT_FREQUENCY),
-            u_distort_function: BasicMono::new()
-                .with_seed(Self::DEFAULT_SEED + 3)
-                .with_octaves(Self::DEFAULT_ROUGHNESS)
-                .with_frequency(Self::DEFAULT_FREQUENCY),
+            distorters,
         }
     }
 
     pub fn with_frequency(self, frequency: f64) -> Self {
-        Self {
-            frequency,
-            x_distort_function: self.x_distort_function.with_frequency(frequency),
-            y_distort_function: self.y_distort_function.with_frequency(frequency),
-            z_distort_function: self.z_distort_function.with_frequency(frequency),
-            u_distort_function: self.u_distort_function.with_frequency(frequency),
-            ..self
+        let mut this = self;
+        this.frequency = frequency;
+        for distorter in &mut this.distorters {
+            distorter.transform.scale = frequency;
         }
+        this
     }
 
     pub fn with_power(self, power: f64) -> Self {
@@ -78,26 +85,43 @@ impl<Source> Turbulence<Source> {
     }
 
     pub fn with_roughness(self, roughness: usize) -> Self {
+        let mut this = self;
+        this.roughness = roughness;
+        let [a, b, c, d] = this.distorters;
+        let distorters = [
+            NoiseFn::<[f64; 2]>::transformed(a.source.with_layers(roughness), a.transform),
+            NoiseFn::<[f64; 2]>::transformed(b.source.with_layers(roughness), b.transform),
+            NoiseFn::<[f64; 2]>::transformed(c.source.with_layers(roughness), c.transform),
+            NoiseFn::<[f64; 2]>::transformed(d.source.with_layers(roughness), d.transform),
+        ];
         Self {
-            roughness,
-            x_distort_function: self.x_distort_function.with_octaves(roughness),
-            y_distort_function: self.y_distort_function.with_octaves(roughness),
-            z_distort_function: self.z_distort_function.with_octaves(roughness),
-            u_distort_function: self.u_distort_function.with_octaves(roughness),
-            ..self
+            distorters,
+            frequency: this.frequency,
+            power: this.power,
+            roughness: this.roughness,
+            seed: this.seed,
+            source: this.source,
         }
     }
 }
 
 impl<Source> Seedable for Turbulence<Source> {
     fn with_seed(self, seed: u32) -> Self {
+        let this = self;
+        let [a, b, c, d] = this.distorters;
+        let distorters = [
+            a.with_seed(seed),
+            b.with_seed(seed),
+            c.with_seed(seed),
+            d.with_seed(seed),
+        ];
         Self {
+            distorters,
+            frequency: this.frequency,
+            power: this.power,
+            roughness: this.roughness,
             seed,
-            x_distort_function: self.x_distort_function.with_seed(seed),
-            y_distort_function: self.y_distort_function.with_seed(seed + 1),
-            z_distort_function: self.z_distort_function.with_seed(seed + 2),
-            u_distort_function: self.u_distort_function.with_seed(seed + 3),
-            ..self
+            source: this.source,
         }
     }
 
@@ -106,9 +130,9 @@ impl<Source> Seedable for Turbulence<Source> {
     }
 }
 
-impl<Source> NoiseFn<f64, 2> for Turbulence<Source>
+impl<Source> NoiseFn<[f64; 2]> for Turbulence<Source>
 where
-    Source: NoiseFn<f64, 2>,
+    Source: NoiseFn<[f64; 2]>,
 {
     fn get(&self, point: [f64; 2]) -> f64 {
         // First, create offsets based on the input values to keep the sampled
@@ -120,16 +144,16 @@ where
         let x1 = point[0] + 26519.0 / 65536.0;
         let y1 = point[1] + 18128.0 / 65536.0;
 
-        let x_distort = point[0] + (self.x_distort_function.get([x0, y0]) * self.power);
-        let y_distort = point[1] + (self.y_distort_function.get([x1, y1]) * self.power);
+        let x_distort = point[0] + (self.distorters[0].get([x0, y0]) * self.power);
+        let y_distort = point[1] + (self.distorters[1].get([x1, y1]) * self.power);
 
         self.source.get([x_distort, y_distort])
     }
 }
 
-impl<Source> NoiseFn<f64, 3> for Turbulence<Source>
+impl<Source> NoiseFn<[f64; 3]> for Turbulence<Source>
 where
-    Source: NoiseFn<f64, 3>,
+    Source: NoiseFn<[f64; 3]>,
 {
     fn get(&self, point: [f64; 3]) -> f64 {
         // First, create offsets based on the input values to keep the sampled
@@ -147,17 +171,17 @@ where
         let y2 = point[1] + 11213.0 / 65536.0;
         let z2 = point[2] + 44845.0 / 65536.0;
 
-        let x_distort = point[0] + (self.x_distort_function.get([x0, y0, z0]) * self.power);
-        let y_distort = point[1] + (self.y_distort_function.get([x1, y1, z1]) * self.power);
-        let z_distort = point[2] + (self.z_distort_function.get([x2, y2, z2]) * self.power);
+        let x_distort = point[0] + (self.distorters[0].get([x0, y0, z0]) * self.power);
+        let y_distort = point[1] + (self.distorters[1].get([x1, y1, z1]) * self.power);
+        let z_distort = point[2] + (self.distorters[2].get([x2, y2, z2]) * self.power);
 
         self.source.get([x_distort, y_distort, z_distort])
     }
 }
 
-impl<Source> NoiseFn<f64, 4> for Turbulence<Source>
+impl<Source> NoiseFn<[f64; 4]> for Turbulence<Source>
 where
-    Source: NoiseFn<f64, 4>,
+    Source: NoiseFn<[f64; 4]>,
 {
     fn get(&self, point: [f64; 4]) -> f64 {
         // First, create offsets based on the input values to keep the sampled
@@ -183,10 +207,10 @@ where
         let z3 = point[2] + 12414.0 / 65536.0;
         let u3 = point[3] + 60943.0 / 65536.0;
 
-        let x_distort = point[0] + (self.x_distort_function.get([x0, y0, z0, u0]) * self.power);
-        let y_distort = point[1] + (self.y_distort_function.get([x1, y1, z1, u1]) * self.power);
-        let z_distort = point[2] + (self.z_distort_function.get([x2, y2, z2, u2]) * self.power);
-        let u_distort = point[3] + (self.u_distort_function.get([x3, y3, z3, u3]) * self.power);
+        let x_distort = point[0] + (self.distorters[0].get([x0, y0, z0, u0]) * self.power);
+        let y_distort = point[1] + (self.distorters[1].get([x1, y1, z1, u1]) * self.power);
+        let z_distort = point[2] + (self.distorters[2].get([x2, y2, z2, u2]) * self.power);
+        let u_distort = point[3] + (self.distorters[3].get([x3, y3, z3, u3]) * self.power);
 
         self.source
             .get([x_distort, y_distort, z_distort, u_distort])

@@ -11,33 +11,30 @@ macro_rules! combiner {
             pub source2: B,
         }
 
-        impl<P: SamplePoint, A, B> Add<A, B>
-        where
-            A: NoiseFn<P>,
-            B: NoiseFn<P>,
+        impl<A, B> $name<A, B>
         {
             pub fn new(source1: A, source2: B) -> Self {
                 Self { source1, source2 }
             }
 
             with!(source1: A);
-            with!(source2: A);
+            with!(source2: B);
         }
 
-        impl<A, B, P: SamplePoint> NoiseFn<P> for Add<A, B>
+        impl<A, B, P: SamplePoint + Clone> NoiseFn<P> for $name<A, B>
         where
             A: NoiseFn<P>,
             B: NoiseFn<P>,
         {
             fn get(&self, point: P) -> f64 {
-                $combine_fn(self.source1.get(point), self.source2.get(point))
+                $combine_fn(self.source1.get(point.clone()), self.source2.get(point))
             }
         }
     };
 }
 
-combiner! { pub Add(f64::add) }
-combiner! { pub Multiply(f64::mul) }
+combiner! { pub Add(std::ops::Add::add) }
+combiner! { pub Multiply(std::ops::Mul::mul) }
 combiner! { pub Power(f64::powf) }
 combiner! { pub Min(f64::min) }
 combiner! { pub Max(f64::max) }

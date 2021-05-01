@@ -51,13 +51,13 @@ impl<A, B, X> Select<A, B, X> {
 
 impl<P, A, B, X> NoiseFn<P> for Select<A, B, X>
 where
-    P: SamplePoint,
+    P: SamplePoint + Clone,
     A: NoiseFn<P>,
     B: NoiseFn<P>,
     X: NoiseFn<P>,
 {
     fn get(&self, point: P) -> f64 {
-        let control_value = self.control.get(point);
+        let control_value = self.control.get(point.clone());
         let (lower, upper) = self.bounds;
 
         if self.falloff > 0.0 {
@@ -69,7 +69,7 @@ where
                     let alpha =
                         ((control_value - lower_curve) / (upper_curve - lower_curve)).map_cubic();
 
-                    interpolate::linear(self.source1.get(point), self.source2.get(point), alpha)
+                    interpolate::linear(self.source1.get(point.clone()), self.source2.get(point), alpha)
                 }
                 _ if control_value < (upper - self.falloff) => self.source2.get(point),
                 _ if control_value < (upper + self.falloff) => {
@@ -78,7 +78,7 @@ where
                     let alpha =
                         ((control_value - lower_curve) / (upper_curve - lower_curve)).map_cubic();
 
-                    interpolate::linear(self.source2.get(point), self.source1.get(point), alpha)
+                    interpolate::linear(self.source2.get(point.clone()), self.source1.get(point), alpha)
                 }
                 _ => self.source1.get(point),
             }

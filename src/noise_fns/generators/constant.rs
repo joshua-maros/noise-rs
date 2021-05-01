@@ -1,4 +1,4 @@
-use crate::NoiseFn;
+use crate::{NoiseFn, SamplePoint};
 
 /// Noise function that outputs a constant value.
 ///
@@ -19,7 +19,7 @@ impl Constant {
     }
 }
 
-impl<P> NoiseFn<P> for Constant {
+impl<P: SamplePoint> NoiseFn<P> for Constant {
     fn get(&self, _point: P) -> f64 {
         self.value
     }

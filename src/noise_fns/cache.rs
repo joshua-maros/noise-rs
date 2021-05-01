@@ -15,39 +15,38 @@ use std::cell::{Cell, RefCell};
 /// function will redundantly calculate the same output value once for each
 /// noise function in which it is included.
 #[derive(Clone, Debug)]
-pub struct Cache<Source> {
+pub struct Cache<Source, Point: SamplePoint> {
     /// Outputs the value to be cached.
     pub source: Source,
 
     value: Cell<Option<f64>>,
 
-    point: RefCell<Vec<f64>>,
+    point: RefCell<Point>,
 }
 
-impl<Source> Cache<Source> {
+impl<Source, Point: SamplePoint> Cache<Source, Point> {
     pub fn new(source: Source) -> Self {
         Cache {
             source,
             value: Cell::new(None),
-            point: RefCell::new(Vec::new()),
+            point: RefCell::new(Point::zero()),
         }
     }
 }
 
-impl<Source, P: SamplePoint> NoiseFn<P> for Cache<Source>
+impl<Source, P: SamplePoint + PartialEq + Clone> NoiseFn<P> for Cache<Source, P>
 where
     Source: NoiseFn<P>,
 {
     fn get(&self, point: P) -> f64 {
         match self.value.get() {
-            Some(value) if quick_eq(&*self.point.borrow(), &point) => value,
+            Some(value) if *self.point.borrow() == point => value,
             Some(_) | None => {
-                let value = self.source.get(point);
+                let value = self.source.get(point.clone());
                 self.value.set(Some(value));
 
                 let mut cached_point = self.point.borrow_mut();
-                cached_point.clear();
-                cached_point.extend_from_slice(&point);
+                *cached_point = point;
 
                 value
             }

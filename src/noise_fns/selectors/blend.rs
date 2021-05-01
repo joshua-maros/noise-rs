@@ -31,14 +31,14 @@ impl<A, B, X> Blend<A, B, X> {
 
 impl<P, A, B, X> NoiseFn<P> for Blend<A, B, X>
 where
-    P: SamplePoint,
+    P: SamplePoint + Clone,
     A: NoiseFn<P>,
     B: NoiseFn<P>,
     X: NoiseFn<P>,
 {
     fn get(&self, point: P) -> f64 {
-        let lower = self.source1.get(point);
-        let upper = self.source2.get(point);
+        let lower = self.source1.get(point.clone());
+        let upper = self.source2.get(point.clone());
         let control = self.control.get(point);
 
         interpolate::linear(lower, upper, control)

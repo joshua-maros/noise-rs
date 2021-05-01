@@ -1,4 +1,6 @@
-use crate::{NoiseFn, SamplePoint};
+use num_traits::Num;
+
+use crate::NoiseFn;
 
 /// Noise function that outputs concentric cylinders.
 ///
@@ -20,13 +22,11 @@ impl Default for Cylinders {
     }
 }
 
-impl<P> NoiseFn<P> for Cylinders
+impl<E, const N: usize> NoiseFn<[E; N]> for Cylinders
 where
-    P: SamplePoint,
-    P::Element: Into<f64>,
+    E: Num + Copy + Into<f64>,
 {
-    fn get(&self, point: P) -> f64 {
-        let point = point.into_raw();
+    fn get(&self, point: [E; N]) -> f64 {
         // Scale the inputs by the frequency.
         let x = point[0].into();
         let y = point[1].into();
